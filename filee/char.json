@@ -1,0 +1,26 @@
+{
+  "name": "Leia",
+  "xp": {
+    "xp": 330,
+    "maxxp": 500
+  },
+  "lv": {
+    "lv": 3,
+    "maxlv": 20
+  },
+  "hp": {
+    "hp": 10,
+    "maxhp": 10
+  },
+  "stamina": {
+    "stamina": 10,
+    "maxstamina": 10
+  },
+  "job": "Technician",
+  "status_effect": [],
+  "location": "b3",
+  "game_over": "False",
+  "inventory": [
+    "light_gun", "radio"
+  ]
+}
