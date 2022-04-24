@@ -59,6 +59,14 @@ def load_game():
     my_player.game_over = load_char["game_over"]
     my_player.inventory = load_char["inventory"]
 
+    zonem = open(save_file + "/zone_map.json")
+    zone_map = json.loads(zonem.read())
+    global zone_map
+
+    completep = open(save_file + "/complete_places.json")
+    complete_places = json.loads(completep.read())
+    global complete_places
+
     print("Welcome back.")
     time.sleep(2.0)
     main_game_loop()
@@ -74,7 +82,17 @@ def save_game():
                 break
             else:
                 print("Exception: Save file name already exists!")
-                continue
+                while True:
+                    print("Would you like to overwrite this save? (y/n)")
+                    save_over = input("> ")
+                    if save_over == "y":
+                        break
+                    elif save_over == "n":
+                        break
+                if save_over == "y":
+                    break
+                elif save_over == "n":
+                    continue
         elif sure == "n":
             break
         else:
@@ -105,8 +123,14 @@ def save_game():
         "inventory": my_player.inventory
     }
 
+    os.mkdir("./" + save_file)
+
     with open(save_file + "/char.json", 'w') as f:
         json.dump(char_json, f)
+    with open(save_file + "/zone_map.json", 'w') as f:
+        json.dump(zone_map, f)
+    with open(save_file + "/complete_places.json", 'w') as f:
+        json.dump(complete_places, f)
 
 
 class player:
@@ -164,7 +188,7 @@ def title_screen():
 # incomprehensible horror.        #
 ###################################
 
-				
+
             - Play -
             - Help -
             - Quit -
@@ -229,11 +253,13 @@ def setup_game():
         my_player.xp = {"xp": 0, "maxxp": 500}
         my_player.lv = {"lv": 1, "maxlv": 20}
         my_player.hp = {"hp": 7, "maxhp": 7}
-        my_player.inventory += ["light_gun"]
+        my_player.inventory.append("light_gun")
+
     elif my_player.job == "arms handler":
         my_player.xp = {"xp": 0, "maxxp": 500}
         my_player.lv = {"lv": 1, "maxlv": 20}
         my_player.hp = {"hp": 10, "maxhp": 10}
+
     elif my_player.job == "swordsman":
         my_player.xp = {"xp": 0, "maxxp": 500}
         my_player.lv = {"lv": 1, "maxlv": 20}
@@ -251,9 +277,9 @@ def setup_game():
 #### GAME INTERACTIVITY ####
 def print_location():
 
-    print(zonemap[my_player.location][ZONENAME])
+    print(zone_map[my_player.location][ZONENAME])
     print()
-    print(zonemap[my_player.location][DESCRIPTION])
+    print(zone_map[my_player.location][DESCRIPTION])
 
 
 def prompt():
@@ -261,7 +287,7 @@ def prompt():
     print("What will you do?")
     acceptable_actions = ["move", "go", "travel", "walk", "quit", "examine",
                           "inspect", "interact", "look", "help", "inventory",
-                          "items", "stuff"]
+                          "items", "stuff", "save", "equip", ]
     action = ""
     while action not in acceptable_actions:
         action = input("> ").lower()
@@ -282,24 +308,26 @@ def prompt():
         player_examine(action)
     elif action in ["inventory", "items", "stuff"]:
         print(f"Here are your current stored items: \n{my_player.inventory}")
-    elif "help":
+    elif action in "help":
         print(f"Acceptable commands:\n{acceptable_actions}")
+    elif action in "save":
+        save_game()
 
 
 def player_move(my_action):
     ask = "where will you head to?\n> "
     destination = input(ask)
-    if destination in ["up", "north"] and (zonemap[my_player.location][UP] != ""):
-        destination = zonemap[my_player.location][UP]
+    if destination in ["up", "north"] and (zone_map[my_player.location][UP] != ""):
+        destination = zone_map[my_player.location][UP]
         movement_handler(destination)
-    elif destination in ["down", "south"] and (zonemap[my_player.location][DOWN] != ""):
-        destination = zonemap[my_player.location][DOWN]
+    elif destination in ["down", "south"] and (zone_map[my_player.location][DOWN] != ""):
+        destination = zone_map[my_player.location][DOWN]
         movement_handler(destination)
-    elif destination in ["left", "west"] and (zonemap[my_player.location][LEFT] != ""):
-        destination = zonemap[my_player.location][LEFT]
+    elif destination in ["left", "west"] and (zone_map[my_player.location][LEFT] != ""):
+        destination = zone_map[my_player.location][LEFT]
         movement_handler(destination)
-    elif destination in ["right", "east"] and (zonemap[my_player.location][RIGHT] != ""):
-        destination = zonemap[my_player.location][RIGHT]
+    elif destination in ["right", "east"] and (zone_map[my_player.location][RIGHT] != ""):
+        destination = zone_map[my_player.location][RIGHT]
         movement_handler(destination)
     else:
         print("Invalid movement, probably out of bounds or you wrote something wrong.")
@@ -312,10 +340,10 @@ def movement_handler(destination):
 
 
 def player_examine(action):
-    if zonemap[my_player.location][COMPLETE]:
+    if zone_map[my_player.location][COMPLETE]:
         print("You have already completed anything important to do here.")
     else:
-        print(zonemap[my_player.location][EXAMINATION])
+        print(zone_map[my_player.location][EXAMINATION])
 
 
 #### MAP ####
@@ -336,15 +364,15 @@ H - home
 W - thin walkway
 """
 
-ZONENAME = 'zonename'
-DESCRIPTION = 'description'
-EXAMINATION = 'examination'
-COMPLETE = False
-CLEANED = False
-UP = "up", "north"
-DOWN = "down", "south"
-LEFT = "left", "west"
-RIGHT = "right", "east"
+ZONENAME = 'ZONENAME'
+DESCRIPTION = 'DESCRIPTION'
+EXAMINATION = 'EXAMINATION'
+COMPLETE = "COMPLETE"
+CLEANED = "CLEANED"
+UP = "UP"
+DOWN = "DOWN"
+LEFT = "LEFT"
+RIGHT = "RIGHT"
 
 complete_places = {
     "a1": False, "a2": False, "a3": False, "a4": False,
@@ -353,7 +381,7 @@ complete_places = {
     "d1": False, "d2": False, "d3": False, "d4": False,
 }
 
-zonemap = {
+zone_map = {
     "a1": {
         ZONENAME: "West Black Market Stall",
         DESCRIPTION: "This stall sells various hazardous and experimental drugs. These have been outlawed for a reason",
@@ -404,10 +432,10 @@ zonemap = {
         EXAMINATION: "",
         COMPLETE: False,
         CLEANED: False,
-        UP: {"up", "north"},
-        DOWN: {"down", "south"},
-        LEFT: {"left", "west"},
-        RIGHT: {"right", "east"}
+        UP: ["up", "north"],
+        DOWN: ["down", "south"],
+        LEFT: ["left", "west"],
+        RIGHT: ["right", "east"]
     },
     "b2": {
         ZONENAME: "Thin Walkway",
@@ -437,10 +465,10 @@ zonemap = {
         EXAMINATION: "",
         COMPLETE: False,
         CLEANED: False,
-        UP: {"up", "north"},
-        DOWN: {"down", "south"},
-        LEFT: {"left", "west"},
-        RIGHT: {"right", "east"}
+        UP: ["up", "north"],
+        DOWN: ["down", "south"],
+        LEFT: ["left", "west"],
+        RIGHT: ["right", "east"]
     },
     "c1": {
         ZONENAME: "",
@@ -448,10 +476,10 @@ zonemap = {
         EXAMINATION: "",
         COMPLETE: False,
         CLEANED: False,
-        UP: {"up", "north"},
-        DOWN: {"down", "south"},
-        LEFT: {"left", "west"},
-        RIGHT: {"right", "east"}
+        UP: ["up", "north"],
+        DOWN: ["down", "south"],
+        LEFT: ["left", "west"],
+        RIGHT: ["right", "east"]
     },
     "c2": {
         ZONENAME: "",
@@ -459,10 +487,10 @@ zonemap = {
         EXAMINATION: "",
         COMPLETE: False,
         CLEANED: False,
-        UP: {"up", "north"},
-        DOWN: {"down", "south"},
-        LEFT: {"left", "west"},
-        RIGHT: {"right", "east"}
+        UP: ["up", "north"],
+        DOWN: ["down", "south"],
+        LEFT: ["left", "west"],
+        RIGHT: ["right", "east"]
     },
     "c3": {
         ZONENAME: "",
@@ -470,10 +498,10 @@ zonemap = {
         EXAMINATION: "",
         COMPLETE: False,
         CLEANED: False,
-        UP: {"up", "north"},
-        DOWN: {"down", "south"},
-        LEFT: {"left", "west"},
-        RIGHT: {"right", "east"}
+        UP: ["up", "north"],
+        DOWN: ["down", "south"],
+        LEFT: ["left", "west"],
+        RIGHT: ["right", "east"]
     },
     "c4": {
         ZONENAME: "",
@@ -481,10 +509,10 @@ zonemap = {
         EXAMINATION: "",
         COMPLETE: False,
         CLEANED: False,
-        UP: {"up", "north"},
-        DOWN: {"down", "south"},
-        LEFT: {"left", "west"},
-        RIGHT: {"right", "east"}
+        UP: ["up", "north"],
+        DOWN: ["down", "south"],
+        LEFT: ["left", "west"],
+        RIGHT: ["right", "east"]
     },
 }
 
