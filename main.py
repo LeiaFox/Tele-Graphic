@@ -60,12 +60,13 @@ def load_game():
     my_player.inventory = load_char["inventory"]
 
     zonem = open(save_file + "/zone_map.json")
+		global zone_map
     zone_map = json.loads(zonem.read())
-    global zone_map
+
 
     completep = open(save_file + "/complete_places.json")
+		global complete_places
     complete_places = json.loads(completep.read())
-    global complete_places
 
     print("Welcome back.")
     time.sleep(2.0)
@@ -482,8 +483,8 @@ zone_map = {
         RIGHT: ["right", "east"]
     },
     "c2": {
-        ZONENAME: "",
-        DESCRIPTION: "",
+        ZONENAME: "Thin Walkway",
+        DESCRIPTION: "A thin walkway filled with signs and conglomerate advertisements",
         EXAMINATION: "",
         COMPLETE: False,
         CLEANED: False,
