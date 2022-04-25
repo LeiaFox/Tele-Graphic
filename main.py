@@ -17,6 +17,8 @@ new = colored("New Game", "red")
 
 screen_width = 100
 
+global zone_map
+global complete_places
 
 def clear_screen():
     if sys.platform == 'win32':
@@ -60,12 +62,10 @@ def load_game():
     my_player.inventory = load_char["inventory"]
 
     zonem = open(save_file + "/zone_map.json")
-		global zone_map
     zone_map = json.loads(zonem.read())
 
 
     completep = open(save_file + "/complete_places.json")
-		global complete_places
     complete_places = json.loads(completep.read())
 
     print("Welcome back.")
@@ -213,6 +213,8 @@ def help_menu():
 #### GAME FUNCTIONALITY ####
 def main_game_loop():
     while my_player.game_over == "False":
+        if my_player.location == "b3":
+            b3appartmentprompt()
         prompt()
 
 
@@ -227,7 +229,7 @@ def setup_game():
     my_player.name = player_name
 
     question = "\nWhat class would you like to be?\n"
-    question2 = "\nClasses: Technician, Arms Handler, Swordsman\n"
+    question2 = "\nClasses: Technician (1), Arms Handler (2), Swordsman (3)\n"
     for character in question:
         sys.stdout.write(character)
         sys.stdout.flush()
@@ -250,18 +252,19 @@ def setup_game():
 
     my_player.job = player_job
 
-    if my_player.job == "technician":
+    if my_player.job == "1":
         my_player.xp = {"xp": 0, "maxxp": 500}
         my_player.lv = {"lv": 1, "maxlv": 20}
         my_player.hp = {"hp": 7, "maxhp": 7}
         my_player.inventory.append("light_gun")
 
-    elif my_player.job == "arms handler":
+    elif my_player.job == "2":
         my_player.xp = {"xp": 0, "maxxp": 500}
         my_player.lv = {"lv": 1, "maxlv": 20}
         my_player.hp = {"hp": 10, "maxhp": 10}
+        
 
-    elif my_player.job == "swordsman":
+    elif my_player.job == "3":
         my_player.xp = {"xp": 0, "maxxp": 500}
         my_player.lv = {"lv": 1, "maxlv": 20}
         my_player.hp = {"hp": 15, "maxhp": 15}
@@ -282,13 +285,14 @@ def print_location():
     print()
     print(zone_map[my_player.location][DESCRIPTION])
 
-
-def prompt():
+def b3appartmentprompt():
     print("\n" + "=================================")
-    print("What will you do?")
+    print("What will you do?")		
     acceptable_actions = ["move", "go", "travel", "walk", "quit", "examine",
                           "inspect", "interact", "look", "help", "inventory",
-                          "items", "stuff", "save", "equip", ]
+                          "items", "stuff", "save", "clean", "clean my room", 
+                          "clean my appartment"
+                         ]
     action = ""
     while action not in acceptable_actions:
         action = input("> ").lower()
@@ -310,7 +314,43 @@ def prompt():
     elif action in ["inventory", "items", "stuff"]:
         print(f"Here are your current stored items: \n{my_player.inventory}")
     elif action in "help":
-        print(f"Acceptable commands:\n{acceptable_actions}")
+        print("""Acceptable commands:\nmoving: "move", "go", "travel", "walk" \nexamining: "examine", "inspect", "interact", "look"\ninventory: "inventory", "items", "stuff"\ncleaning: "clean", "clean my room"\n""")
+    elif action in "save":
+        save_game()
+    elif action in ["clean", "clean my room", "clean my appartment"]:
+        print("You cleaned your appartment thoroughly to your liking. ")
+        zone_map[my_player.location][CLEANED] = True
+
+
+def prompt():
+    print("\n" + "=================================")
+    print("What will you do?")
+    acceptable_actions = ["move", "go", "travel", "walk", "quit", "examine",
+                          "inspect", "interact", "look", "help", "inventory",
+                          "items", "stuff", "save",
+                         ]
+    action = ""
+    while action not in acceptable_actions:
+        action = input("> ").lower()
+    if action == "quit":
+        clear_screen()
+        print("Shutting Subject Down.")
+        time.sleep(1.0)
+        clear_screen()
+        print("Shutting Subject Down..")
+        time.sleep(1.0)
+        clear_screen()
+        print("Shutting Subject Down...")
+        time.sleep(1.0)
+        exit(0)
+    elif action in ["move", "go", "travel", "walk"]:
+        player_move(action)
+    elif action in ["examine", "inspect", "interact", "look"]:
+        player_examine(action)
+    elif action in ["inventory", "items", "stuff"]:
+        print(f"Here are your current stored items: \n{my_player.inventory}")
+    elif action in "help":
+        print("""Acceptable commands:\nmoving: "move", "go", "travel", "walk" \nexamining: "examine", "inspect", "interact", "look"\ninventory: "inventory", "items", "stuff"\n""")
     elif action in "save":
         save_game()
 
@@ -357,23 +397,24 @@ def player_examine(action):
 -----------------
 ¦   ¦ W ¦   ¦   ¦ c4
 -----------------
-¦   ¦ W ¦   ¦   ¦ d4
+¦   ¦ S ¦   ¦   ¦ d4
 -----------------
 
 B - black market
 H - home
 W - thin walkway
+S - scripted cutscene, also a thin walkway
 """
 
 ZONENAME = 'ZONENAME'
 DESCRIPTION = 'DESCRIPTION'
 EXAMINATION = 'EXAMINATION'
-COMPLETE = "COMPLETE"
-CLEANED = "CLEANED"
-UP = "UP"
-DOWN = "DOWN"
-LEFT = "LEFT"
-RIGHT = "RIGHT"
+COMPLETE = 'COMPLETE'
+CLEANED = 'CLEANED'
+UP = 'UP'
+DOWN = 'DOWN'
+LEFT = 'LEFT'
+RIGHT = 'RIGHT'
 
 complete_places = {
     "a1": False, "a2": False, "a3": False, "a4": False,
